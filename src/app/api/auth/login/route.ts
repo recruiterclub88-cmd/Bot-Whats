@@ -5,38 +5,34 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: Request) {
     try {
         const { username, password } = await req.json();
-        const adminUser = process.env.WEB_ADMIN_LOGIN;
-        const adminPass = process.env.WEB_ADMIN_PASSWORD;
 
-        if (!adminUser) {
-            console.error('[Login API] WEB_ADMIN_LOGIN is missing in environment');
-            return NextResponse.json({ error: 'Config error: WEB_ADMIN_LOGIN missing' }, { status: 500 });
-        }
-        if (!adminPass) {
-            console.error('[Login API] WEB_ADMIN_PASSWORD is missing in environment');
-            return NextResponse.json({ error: 'Config error: WEB_ADMIN_PASSWORD missing' }, { status: 500 });
+        // Спробуємо дістати змінні всіма можливими способами
+        const adminUser = process.env.MY_ADMIN_USER || process.env['MY_ADMIN_USER'];
+        const adminPass = process.env.MY_ADMIN_PASS || process.env['MY_ADMIN_PASS'];
+
+        if (!adminUser || !adminPass) {
+            return NextResponse.json({
+                error: 'SERVER_CONFIG_ERROR',
+                details: `Missing: ${!adminUser ? 'USER' : ''} ${!adminPass ? 'PASS' : ''}`.trim()
+            }, { status: 500 });
         }
 
         if (username === adminUser && password === adminPass) {
             const response = NextResponse.json({ success: true });
-
-            // Set a simple auth cookie. In a real app, this would be a signed JWT/Session ID.
-            // For this project, we'll use a simple "logged_in" marker + credentials in a cookie (encrypted or just plain for now as it's a private bot).
-            // Let's use a base64 of user:pass as a simple token.
             const token = btoa(`${username}:${password}`);
 
             response.cookies.set('admin_session', token, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
+                secure: true,
                 sameSite: 'lax',
-                maxAge: 60 * 60 * 24 // 24 hours
+                maxAge: 60 * 60 * 24
             });
 
             return response;
         }
 
-        return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+        return NextResponse.json({ error: 'INVALID_CREDENTIALS' }, { status: 401 });
     } catch (error) {
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return NextResponse.json({ error: 'SERVER_ERROR' }, { status: 500 });
     }
 }
