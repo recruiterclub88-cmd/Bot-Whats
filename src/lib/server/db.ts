@@ -27,13 +27,14 @@ export function getSupabaseAdmin() {
   if (!supabaseUrl || !supabaseKey) {
     const error = `Missing Supabase credentials: URL=${!!supabaseUrl}, KEY=${!!supabaseKey}`;
     console.error('❌ [Supabase Init]', error);
-    // Не викидаємо помилку, щоб не ламати білд, але логуємо
-    // throw new Error(error);
-  } else {
-    console.log('✅ [Supabase Init] Successfully initialized with URL:', supabaseUrl.substring(0, 30));
+    // Повертаємо пустий об'єкт/null, щоб не ламати білд
+    // Бібліотека supabase-js кидає помилку, якщо URL пустий
+    return null;
   }
 
-  return createClient(supabaseUrl || '', supabaseKey || '', {
+  console.log('✅ [Supabase Init] Successfully initialized with URL:', supabaseUrl.substring(0, 30));
+
+  return createClient(supabaseUrl, supabaseKey, {
     auth: { persistSession: false }
   });
 }
