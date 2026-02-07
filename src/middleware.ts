@@ -8,33 +8,51 @@ function isProtected(pathname: string): boolean {
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
   if (!isProtected(pathname)) return NextResponse.next();
 
   const user = process.env.ADMIN_USER || '';
   const pass = process.env.ADMIN_PASS || '';
 
-  const auth = req.headers.get('authorization');
-  if (auth) {
-    const [scheme, encoded] = auth.split(' ');
+  // Try to authenticate via Cookie (Preferred) OR Basic Auth (for backward compatibility if needed)
+  const sessionCookie = req.cookies.get('admin_session')?.value;
+  const authHeader = req.headers.get('authorization');
+
+  let authorized = false;
+
+  // 1. Check Cookie
+  if (sessionCookie) {
+    try {
+      const decoded = atob(sessionCookie);
+      const idx = decoded.indexOf(':');
+      const u = decoded.slice(0, idx);
+      const p = decoded.slice(idx + 1);
+      if (u === user && p === pass) {
+        authorized = true;
+      }
+    } catch (e) { }
+  }
+
+  // 2. Fallback to Basic Auth header (if not already authorized)
+  if (!authorized && authHeader) {
+    const [scheme, encoded] = authHeader.split(' ');
     if (scheme === 'Basic' && encoded) {
       try {
-        // Use atob for better compatibility with Edge runtime
         const decoded = atob(encoded);
         const idx = decoded.indexOf(':');
         const u = decoded.slice(0, idx);
         const p = decoded.slice(idx + 1);
-
         if (u === user && p === pass) {
-          return NextResponse.next();
+          authorized = true;
         }
-      } catch (e) {
-        console.error('[Middleware] Auth decoding error:', e);
-      }
+      } catch (e) { }
     }
   }
 
+  if (authorized) return NextResponse.next();
+
   // If not authorized:
-  // 1. For API requests: return 401 WITHOUT WWW-Authenticate to avoid browser popup
+  // For API requests: return 401 WITHOUT challenge header
   if (pathname.startsWith('/api/')) {
     return new NextResponse(JSON.stringify({ error: 'unauthorized' }), {
       status: 401,
@@ -42,12 +60,10 @@ export function middleware(req: NextRequest) {
     });
   }
 
-  // 2. For page requests: redirect to the login page
+  // For page requests: redirect to login
   const url = req.nextUrl.clone();
   url.pathname = '/admin';
   return NextResponse.redirect(url);
 }
-
-
 
 export const config = { matcher: ['/admin/:path*', '/api/admin/:path*'] };

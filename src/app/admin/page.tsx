@@ -16,18 +16,20 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      const credentials = btoa(`${username}:${password}`);
-      const response = await fetch('/api/admin/settings', {
-        headers: {
-          'Authorization': `Basic ${credentials}`
-        }
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
       });
 
       if (response.ok) {
-        sessionStorage.setItem('adminAuth', credentials);
+        // Successful login sets a cookie on the server.
+        // We also keep the 'adminAuth' in sessionStorage for existing dashboard logic.
+        sessionStorage.setItem('adminAuth', btoa(`${username}:${password}`));
         router.push('/admin/dashboard');
       } else {
-        setError('Неправильний логін або пароль');
+        const data = await response.json();
+        setError(data.error || 'Неправильний логін або пароль');
       }
     } catch (err) {
       setError('Помилка підключення до сервера');
