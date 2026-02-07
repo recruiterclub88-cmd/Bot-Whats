@@ -5,22 +5,16 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    if (!process.env.SUPABASE_URL) {
-      throw new Error('DEBUG: SUPABASE_URL is missing in environment variables.');
-    }
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      throw new Error('DEBUG: SUPABASE_SERVICE_ROLE_KEY is missing in environment variables.');
-    }
+    // Логуємо всі доступні env змінні (без значень для безпеки)
+    console.log('[Settings API] Available env vars:', {
+      hasSupabaseUrl: !!process.env.SUPABASE_URL,
+      hasSupabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      nodeEnv: process.env.NODE_ENV,
+      vercel: process.env.VERCEL,
+    });
 
-    // Отримуємо клієнт заново, щоб переконатися, що він ініціалізований з актуальними змінними
-    const { getSupabaseAdmin } = require('@/lib/server/db');
-    const db = getSupabaseAdmin();
-
-    if (!db) throw new Error('DEBUG: Failed to initialize Supabase client (db is null).');
-
-    const { data, error } = await db
-
-
+    // Використовуємо supabaseAdmin напрямую - він викличе getSupabaseAdmin() автоматично
+    const { data, error } = await supabaseAdmin
       .from('settings')
       .select('key,value')
       .in('key', ['system_prompt', 'site_url', 'candidate_link', 'agency_link', 'tone']);
