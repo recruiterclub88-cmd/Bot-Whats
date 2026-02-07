@@ -5,16 +5,16 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: Request) {
     try {
         const { username, password } = await req.json();
-        const adminUser = process.env.ADMIN_USER;
-        const adminPass = process.env.ADMIN_PASS;
+        const adminUser = process.env.WEB_ADMIN_LOGIN;
+        const adminPass = process.env.WEB_ADMIN_PASSWORD;
 
         if (!adminUser) {
-            console.error('[Login API] ADMIN_USER is missing in environment');
-            return NextResponse.json({ error: 'Config error: ADMIN_USER missing' }, { status: 500 });
+            console.error('[Login API] WEB_ADMIN_LOGIN is missing in environment');
+            return NextResponse.json({ error: 'Config error: WEB_ADMIN_LOGIN missing' }, { status: 500 });
         }
         if (!adminPass) {
-            console.error('[Login API] ADMIN_PASS is missing in environment');
-            return NextResponse.json({ error: 'Config error: ADMIN_PASS missing' }, { status: 500 });
+            console.error('[Login API] WEB_ADMIN_PASSWORD is missing in environment');
+            return NextResponse.json({ error: 'Config error: WEB_ADMIN_PASSWORD missing' }, { status: 500 });
         }
 
         if (username === adminUser && password === adminPass) {

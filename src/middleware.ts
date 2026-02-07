@@ -11,8 +11,8 @@ export function middleware(req: NextRequest) {
 
   if (!isProtected(pathname)) return NextResponse.next();
 
-  const user = process.env.ADMIN_USER || '';
-  const pass = process.env.ADMIN_PASS || '';
+  const user = process.env.WEB_ADMIN_LOGIN || '';
+  const pass = process.env.WEB_ADMIN_PASSWORD || '';
 
   // Try to authenticate via Cookie (Preferred) OR Basic Auth (for backward compatibility if needed)
   const sessionCookie = req.cookies.get('admin_session')?.value;
