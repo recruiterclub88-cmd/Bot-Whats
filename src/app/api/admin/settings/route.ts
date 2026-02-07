@@ -5,11 +5,21 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      throw new Error('Supabase is not configured. Please check Vercel environment variables.');
+    if (!process.env.SUPABASE_URL) {
+      throw new Error('DEBUG: SUPABASE_URL is missing in environment variables.');
+    }
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error('DEBUG: SUPABASE_SERVICE_ROLE_KEY is missing in environment variables.');
     }
 
-    const { data, error } = await supabaseAdmin
+    // Отримуємо клієнт заново, щоб переконатися, що він ініціалізований з актуальними змінними
+    const { getSupabaseAdmin } = require('@/lib/server/db');
+    const db = getSupabaseAdmin();
+
+    if (!db) throw new Error('DEBUG: Failed to initialize Supabase client (db is null).');
+
+    const { data, error } = await db
+
 
       .from('settings')
       .select('key,value')
