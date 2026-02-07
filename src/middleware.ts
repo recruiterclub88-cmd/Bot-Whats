@@ -13,12 +13,10 @@ export function middleware(req: NextRequest) {
 
   if (!isProtected(pathname)) return NextResponse.next();
 
-  // Використовуємо нові імена для 100% скидання кешу
-  const user = process.env.MY_ADMIN_USER || '';
-  const pass = process.env.MY_ADMIN_PASS || '';
+  const user = process.env.MY_ADMIN_USER || process.env.WEB_ADMIN_LOGIN || process.env.ADMIN_USER || 'recruiterclub88@gmail.com';
+  const pass = process.env.MY_ADMIN_PASS || process.env.WEB_ADMIN_PASSWORD || process.env.ADMIN_PASS || 'Elitkamen88';
 
   const sessionCookie = req.cookies.get('admin_session')?.value;
-  const authHeader = req.headers.get('authorization');
 
   let authorized = false;
 
@@ -26,29 +24,16 @@ export function middleware(req: NextRequest) {
     try {
       const decoded = atob(sessionCookie);
       const [u, p] = decoded.split(':');
-      if (u === user && p === pass && user !== '') {
+      if (u === user && p === pass) {
         authorized = true;
       }
     } catch (e) { }
   }
 
-  if (!authorized && authHeader) {
-    const [scheme, encoded] = authHeader.split(' ');
-    if (scheme === 'Basic' && encoded) {
-      try {
-        const decoded = atob(encoded);
-        const [u, p] = decoded.split(':');
-        if (u === user && p === pass && user !== '') {
-          authorized = true;
-        }
-      } catch (e) { }
-    }
-  }
-
   if (authorized) return NextResponse.next();
 
   if (pathname.startsWith('/api/')) {
-    return new NextResponse(JSON.stringify({ error: 'unauthorized_middleware' }), {
+    return new NextResponse(JSON.stringify({ error: 'unauthorized' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' }
     });

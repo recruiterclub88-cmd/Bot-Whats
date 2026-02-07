@@ -23,13 +23,11 @@ export default function AdminLoginPage() {
       });
 
       if (response.ok) {
-        // Successful login sets a cookie on the server.
-        // We also keep the 'adminAuth' in sessionStorage for existing dashboard logic.
         sessionStorage.setItem('adminAuth', btoa(`${username}:${password}`));
         router.push('/admin/dashboard');
       } else {
         const data = await response.json();
-        setError(data.error || 'Неправильний логін або пароль');
+        setError(data.error === 'SERVER_CONFIG_ERROR' ? `Сервісна помилка: ${data.details}` : 'Неправильний логін або пароль');
       }
     } catch (err) {
       setError('Помилка підключення до сервера');
