@@ -31,14 +31,25 @@ export default function AdminDashboard() {
             const headers: Record<string, string> = {};
             if (auth) headers['Authorization'] = `Basic ${auth}`;
 
-            const s = await fetch('/api/admin/settings', { cache: 'no-store', headers }).then(r => r.json());
+            const sRes = await fetch('/api/admin/settings', { cache: 'no-store', headers });
+            if (!sRes.ok) {
+                const txt = await sRes.text();
+                throw new Error(`Settings Fetch Error (${sRes.status}): ${txt.slice(0, 100)}`);
+            }
+            const s = await sRes.json();
             if (s?.error) throw new Error(s.error);
             setSettings(s);
 
-            const h = await fetch('/api/admin/history', { cache: 'no-store', headers }).then(r => r.json());
+            const hRes = await fetch('/api/admin/history', { cache: 'no-store', headers });
+            if (!hRes.ok) {
+                const txt = await hRes.text();
+                throw new Error(`History Fetch Error (${hRes.status}): ${txt.slice(0, 100)}`);
+            }
+            const h = await hRes.json();
             if (h?.error) throw new Error(h.error);
             setHistory(h.items || []);
         } catch (e: any) {
+            console.error('[Dashboard LoadAll] Error:', e);
             setError(String(e?.message || e));
         } finally {
             setLoading(false);
