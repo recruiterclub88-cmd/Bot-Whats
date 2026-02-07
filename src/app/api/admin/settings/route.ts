@@ -13,16 +13,32 @@ export async function GET() {
       vercel: process.env.VERCEL,
     });
 
+    console.log('[Settings API] Attempting to fetch from Supabase...');
+
     // Використовуємо supabaseAdmin напрямую - він викличе getSupabaseAdmin() автоматично
     const { data, error } = await supabaseAdmin
       .from('settings')
       .select('key,value')
       .in('key', ['system_prompt', 'site_url', 'candidate_link', 'agency_link', 'tone']);
 
-    if (error) throw new Error(error.message);
+    console.log('[Settings API] Supabase response:', {
+      hasData: !!data,
+      dataLength: data?.length,
+      hasError: !!error,
+      errorMessage: error?.message,
+      errorDetails: error?.details,
+      errorHint: error?.hint,
+    });
+
+    if (error) {
+      console.error('[Settings API] Supabase error details:', JSON.stringify(error, null, 2));
+      throw new Error(`Supabase error: ${error.message || JSON.stringify(error)}`);
+    }
 
     const map: Record<string, string> = {};
     for (const row of data || []) map[row.key] = row.value;
+
+    console.log('[Settings API] Successfully fetched settings, keys:', Object.keys(map));
 
     return NextResponse.json({
       system_prompt: map.system_prompt || '',
@@ -33,6 +49,8 @@ export async function GET() {
     });
   } catch (e: any) {
     console.error('[Settings API GET] Error:', e);
+    console.error('[Settings API GET] Error stack:', e?.stack);
+    console.error('[Settings API GET] Error cause:', e?.cause);
     return NextResponse.json({ error: e.message || 'Internal Server Error' }, { status: 500 });
   }
 }
