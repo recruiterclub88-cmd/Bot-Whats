@@ -5,7 +5,12 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error('Supabase is not configured. Please check Vercel environment variables.');
+    }
+
     const { data, error } = await supabaseAdmin
+
       .from('settings')
       .select('key,value')
       .in('key', ['system_prompt', 'site_url', 'candidate_link', 'agency_link', 'tone']);

@@ -9,6 +9,9 @@ export async function GET() {
         MY_ADMIN_PASS: !!process.env.MY_ADMIN_PASS,
         WEB_ADMIN_LOGIN: !!process.env.WEB_ADMIN_LOGIN,
         ADMIN_USER: !!process.env.ADMIN_USER,
-        all_keys: Object.keys(process.env).filter(k => k.includes('ADMIN') || k.includes('API') || k.includes('SUPA'))
+        SUPABASE_URL: !!process.env.SUPABASE_URL,
+        SUPABASE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+        all_keys: Object.keys(process.env).filter(k => k.includes('ADMIN') || k.includes('API') || k.includes('SUPA') || k.includes('GEMINI'))
+
     });
 }
