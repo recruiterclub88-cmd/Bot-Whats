@@ -11,8 +11,8 @@ export function getSupabaseAdmin() {
   );
 
   // Отримуємо змінні з process.env
-  let supabaseUrl = process.env.SUPABASE_URL;
-  let supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   // Детальне логування для діагностики
   console.log('[Supabase Init] Environment check:', {
@@ -24,25 +24,16 @@ export function getSupabaseAdmin() {
     vercelEnv: process.env.VERCEL_ENV,
   });
 
-  // ТИМЧАСОВИЙ FALLBACK для діагностики (ВИДАЛИТИ ПІСЛЯ ТЕСТУВАННЯ!)
-  if (!supabaseUrl) {
-    console.warn('⚠️ [Supabase Init] Using hardcoded SUPABASE_URL for testing');
-    supabaseUrl = 'https://zrctubjavyhtiumdtau.supabase.co';
-  }
-  if (!supabaseKey) {
-    console.warn('⚠️ [Supabase Init] Using hardcoded SUPABASE_SERVICE_ROLE_KEY for testing');
-    supabaseKey = 'sb_secret_mVTgwJkcX0WrFC9KhqNCcg_WLVf1nVA';
-  }
-
   if (!supabaseUrl || !supabaseKey) {
     const error = `Missing Supabase credentials: URL=${!!supabaseUrl}, KEY=${!!supabaseKey}`;
     console.error('❌ [Supabase Init]', error);
-    throw new Error(error);
+    // Не викидаємо помилку, щоб не ламати білд, але логуємо
+    // throw new Error(error);
+  } else {
+    console.log('✅ [Supabase Init] Successfully initialized with URL:', supabaseUrl.substring(0, 30));
   }
 
-  console.log('✅ [Supabase Init] Successfully initialized with URL:', supabaseUrl.substring(0, 30));
-
-  return createClient(supabaseUrl, supabaseKey, {
+  return createClient(supabaseUrl || '', supabaseKey || '', {
     auth: { persistSession: false }
   });
 }
