@@ -6,9 +6,13 @@ export async function POST(req: Request) {
         const adminUser = process.env.ADMIN_USER;
         const adminPass = process.env.ADMIN_PASS;
 
-        if (!adminUser || !adminPass) {
-            console.error('[Login API] ADMIN_USER or ADMIN_PASS not configured in environment');
-            return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+        if (!adminUser) {
+            console.error('[Login API] ADMIN_USER is missing in environment');
+            return NextResponse.json({ error: 'Config error: ADMIN_USER missing' }, { status: 500 });
+        }
+        if (!adminPass) {
+            console.error('[Login API] ADMIN_PASS is missing in environment');
+            return NextResponse.json({ error: 'Config error: ADMIN_PASS missing' }, { status: 500 });
         }
 
         if (username === adminUser && password === adminPass) {
