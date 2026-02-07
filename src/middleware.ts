@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 function isProtected(pathname: string): boolean {
-  if (pathname.startsWith('/admin')) return true;
+  if (pathname.startsWith('/admin/dashboard')) return true;
   if (pathname.startsWith('/api/admin')) return true;
   return false;
 }
@@ -12,17 +12,6 @@ export function middleware(req: NextRequest) {
 
   const user = process.env.ADMIN_USER || '';
   const pass = process.env.ADMIN_PASS || '';
-
-  console.log('[Middleware] ADMIN_USER exists:', !!user, 'ADMIN_PASS exists:', !!pass);
-
-  if (!user || !pass) {
-    // If admin creds not set, block access rather than exposing admin.
-    return new NextResponse(
-      `Admin credentials are not set. Please add ADMIN_USER and ADMIN_PASS environment variables in Vercel and redeploy.`,
-      { status: 401 }
-    );
-  }
-
 
   const auth = req.headers.get('authorization');
   if (auth) {
